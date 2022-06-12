@@ -1,0 +1,7 @@
+## DON'T PLAY IN THAT FILE - ONLY CHANGE THE NUMBERS AFTER EQUAL SIGN ##
+
+# CHECK_INTERVAL is the time in seconds between each check for a new jobs posted
+# NOTIFICATIONS_INTERVAL is the time in seconds between each notification and other
+
+CHECK_INTERVAL=10
+NOTIFICATIONS_INTERVAL=10
