@@ -1,16 +1,15 @@
-const { toJson } = require('xml2json');
-let {
-  NotificationCenter,
-  WindowsToaster,
-  NotifySend,
-} = require('node-notifier');
+var xml2js = require('xml2js');
+let { NotificationCenter, WindowsToaster, NotifySend } = require('node-notifier');
 const { readFile, readFileSync } = require('fs');
 const { get } = require('axios').default;
 const open = require('open');
 const { copy } = require('copy-paste');
 const JRs = require('json-records');
 const path = require('path');
-const storage = new JRs('data.json');
+
+const rootPath = process.pkg ? path.dirname(process.execPath) : __dirname;
+
+const storage = new JRs(path.join(rootPath, 'data.json'));
 
 let CHECK_INTERVAL;
 let NOTIFICATIONS_INTERVAL;
@@ -28,7 +27,7 @@ let windowsToasterNotifier = new WindowsToaster({
 let notifySendNotifier = new NotifySend();
 
 // Return the notification wrapper based on the operating system
-const setNotifierWrapper = (cb) => {
+const setNotifierWrapper = () => {
   let opsys = process.platform;
   if (opsys == 'darwin') {
     notifier = notificationCenterNotifier;
@@ -37,53 +36,52 @@ const setNotifierWrapper = (cb) => {
   } else if (opsys == 'linux') {
     notifier = notifySendNotifier;
   }
-
-  cb();
 };
 
 // Start loading config files and settings
 const start = () => {
   try {
-    readFile('./config.txt', {}, (err, data) => {
+    readFile(path.join(rootPath, 'config.txt'), {}, (err, data) => {
       const content = data?.toString();
-      let jsonData = toJson(content);
-      jsonData = JSON.parse(jsonData);
-      const URL = jsonData?.rss?.channel?.link;
+      var parser = new xml2js.Parser({ explicitArray: false });
+      parser.parseStringPromise(content).then((jsonData) => {
+        const URL = jsonData?.rss?.channel?.link;
 
-      let settings = readFileSync('./settings.txt');
-      settings = settings.toString();
+        let settings = readFileSync(path.join(rootPath, 'settings.txt'));
+        settings = settings.toString();
 
-      let lines = settings.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('=') && lines[i].includes('CHECK_INTERVAL')) {
-          let line = lines[i].replace(/\s+/g, '');
-          let value = line.split('=')[1];
-          CHECK_INTERVAL = parseInt(value) * 1000;
+        let lines = settings.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].includes('=') && lines[i].includes('CHECK_INTERVAL')) {
+            let line = lines[i].replace(/\s+/g, '');
+            let value = line.split('=')[1];
+            CHECK_INTERVAL = parseInt(value) * 1000;
+          }
+
+          if (
+            lines[i].includes('=') &&
+            lines[i].includes('NOTIFICATIONS_INTERVAL')
+          ) {
+            let line = lines[i].replace(/\s+/g, '');
+            let value = line.split('=')[1];
+            NOTIFICATIONS_INTERVAL = parseInt(value) * 1000;
+          }
         }
 
-        if (
-          lines[i].includes('=') &&
-          lines[i].includes('NOTIFICATIONS_INTERVAL')
-        ) {
-          let line = lines[i].replace(/\s+/g, '');
-          let value = line.split('=')[1];
-          NOTIFICATIONS_INTERVAL = parseInt(value) * 1000;
-        }
-      }
-
-      notifier.notify({
-        title: 'Success',
-        message: 'Started the tracker in success',
-        contentImage: path.join(__dirname, 'logo.png'),
-        sound: true,
+        notifier.notify({
+          title: 'Success',
+          message: 'Started the tracker in success',
+          icon: path.join(rootPath, 'logo.png'),
+          sound: true,
+        });
+        startInterval(URL);
       });
-      startInterval(URL);
     });
   } catch (err) {
     notifier.notify({
       title: 'Error',
       message: 'Error in reading the config file',
-      contentImage: path.join(__dirname, 'logo.png'),
+      icon: path.join(rootPath, 'logo.png'),
       sound: true,
     });
   }
@@ -101,9 +99,10 @@ const startInterval = (URL) => {
 // Fetching the data from Upwork for the target URL
 const fetchData = async (URL) => {
   let output = await get(URL);
-  output = toJson(output.data.toString());
-  output = JSON.parse(output);
-  saveIt(output.rss.channel.item);
+  var parser = new xml2js.Parser({ explicitArray: false });
+  parser.parseStringPromise(output.data).then((output) => {
+    saveIt(output.rss.channel.item);
+  });
 };
 
 // Save the fetched jobs in JSON file
@@ -138,29 +137,27 @@ const makeNotification = (job) => {
     title: job.title,
     message: job.description,
     sound: true,
-    contentImage: path.join(__dirname, 'logo.png'),
-    link: job.link,
+    icon: path.join(rootPath, 'logo.png'),
+    open: job.link,
+  }, (error, response, metadata) => {
+    console.log(error, response, metadata);
+    if (response === "activate") {
+      open(job.link).finally(() => {
+        copyTemplateToClipboard();
+      });
+    }
   });
 };
 
 // Copy the cover letter template to the clipboard
 const copyTemplateToClipboard = () => {
-  readFile('./template.txt', {}, (err, data) => {
+  readFile(path.join(rootPath, 'template.txt'), {}, (err, data) => {
     if (data?.toString().length > 0) {
       copy(data.toString());
     }
   });
 };
 
-// Click handler to open the job URL and copy the template if exist
-const settingNotifierWrapperCB = () => {
-  notifier.on('click', function (notifierObject, options, event) {
-    open(options.link).finally(() => {
-      copyTemplateToClipboard();
-    });
-  });
-};
-
 storage.remove();
-setNotifierWrapper(settingNotifierWrapperCB);
+setNotifierWrapper();
 start();
