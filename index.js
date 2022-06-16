@@ -1,42 +1,23 @@
-var xml2js = require('xml2js');
-let { NotificationCenter, WindowsToaster, NotifySend } = require('node-notifier');
+const xml2js = require('xml2js');
+const clipboard = require('clipboardy');
+const notifier = require('node-notifier');
+const { Notify } = require('node-dbus-notifier');
 const { readFile, readFileSync } = require('fs');
-const { get } = require('axios').default;
+const axios = require('axios');
 const open = require('open');
-const { copy } = require('copy-paste');
 const JRs = require('json-records');
 const path = require('path');
 
 const rootPath = process.pkg ? path.dirname(process.execPath) : __dirname;
+const isLinux = process.platform === 'linux';
+const isMac = process.platform === 'darwin';
+const isWindows = process.platform === 'win32';
 
+const { get } = axios;
 const storage = new JRs(path.join(rootPath, 'data.json'));
 
 let CHECK_INTERVAL;
 let NOTIFICATIONS_INTERVAL;
-
-let notifier;
-
-let notificationCenterNotifier = new NotificationCenter({
-  withFallback: true,
-});
-
-let windowsToasterNotifier = new WindowsToaster({
-  withFallback: true,
-});
-
-let notifySendNotifier = new NotifySend();
-
-// Return the notification wrapper based on the operating system
-const setNotifierWrapper = () => {
-  let opsys = process.platform;
-  if (opsys == 'darwin') {
-    notifier = notificationCenterNotifier;
-  } else if (opsys == 'win32' || opsys == 'win64') {
-    notifier = windowsToasterNotifier;
-  } else if (opsys == 'linux') {
-    notifier = notifySendNotifier;
-  }
-};
 
 // Start loading config files and settings
 const start = () => {
@@ -67,23 +48,46 @@ const start = () => {
             NOTIFICATIONS_INTERVAL = parseInt(value) * 1000;
           }
         }
-
-        notifier.notify({
-          title: 'Success',
-          message: 'Started the tracker in success',
-          icon: path.join(rootPath, 'logo.png'),
-          sound: true,
-        });
+        if (isLinux) {
+          const notify = new Notify({
+            appName: 'Upwork Notifier',
+            appIcon: path.join(rootPath, 'logo.png'),
+            summary: 'Success',
+            body: 'Started the tracker in success',
+            timeout: 5000,
+          });
+          notify.show();
+        } else {
+          notifier.notify({
+            title: 'Success',
+            message: 'Started the tracker in success',
+            icon: path.join(rootPath, 'logo.png'),
+            contentImage: path.join(rootPath, 'logo.png'),
+            sound: true,
+          });
+        }
         startInterval(URL);
       });
     });
   } catch (err) {
-    notifier.notify({
-      title: 'Error',
-      message: 'Error in reading the config file',
-      icon: path.join(rootPath, 'logo.png'),
-      sound: true,
-    });
+    if (isLinux) {
+      const notify = new Notify({
+        appName: 'Upwork Notifier',
+        appIcon: path.join(rootPath, 'logo.png'),
+        summary: 'Error',
+        body: 'Error in reading the config file',
+        timeout: 5000,
+      });
+      notify.show();
+    } else {
+      notifier.notify({
+        title: 'Error',
+        message: 'Error in reading the config file',
+        icon: path.join(rootPath, 'logo.png'),
+        contentImage: path.join(rootPath, 'logo.png'),
+        sound: true,
+      });
+    }
   }
 };
 
@@ -133,31 +137,63 @@ const checkCachedJobs = (jobs, index = 0) => {
 
 // Take the job props and notify the user about it
 const makeNotification = (job) => {
-  notifier.notify({
-    title: job.title,
-    message: job.description,
-    sound: true,
-    icon: path.join(rootPath, 'logo.png'),
-    open: job.link,
-  }, (error, response, metadata) => {
-    console.log(error, response, metadata);
-    if (response === "activate") {
+  if (isLinux) {
+    const notify = new Notify({
+      appName: 'Upwork Notifier',
+      appIcon: path.join(rootPath, 'logo.png'),
+      summary: job.title,
+      body: job.description,
+      timeout: 5000,
+    });
+    notify.addAction('Apply', () => {
       open(job.link).finally(() => {
         copyTemplateToClipboard();
       });
-    }
-  });
+    });
+    notify.show();
+  } else if (isWindows) {
+    notifier.notify({
+      title: job.title,
+      message: job.description,
+      sound: true,
+      icon: path.join(rootPath, 'logo.png'),
+      contentImage: path.join(rootPath, 'logo.png'),
+      actions: ["Apply"],
+    }, (error, response, metadata) => {
+      if (response === "Apply" || response === "apply") {
+        open(job.link).finally(() => {
+          copyTemplateToClipboard();
+        });
+      }
+    });
+  } else if (isMac) {
+    notifier.notify({
+      title: job.title,
+      message: job.description,
+      sound: true,
+      icon: path.join(rootPath, 'logo.png'),
+      contentImage: path.join(rootPath, 'logo.png'),
+      link: job.link,
+    });
+  }
 };
 
 // Copy the cover letter template to the clipboard
 const copyTemplateToClipboard = () => {
   readFile(path.join(rootPath, 'template.txt'), {}, (err, data) => {
     if (data?.toString().length > 0) {
-      copy(data.toString());
+      clipboard.writeSync(data.toString());
     }
   });
 };
 
+if (isMac) {
+  notifier.on('click', function (notifierObject, options, event) {
+    open(options.link).finally(() => {
+      copyTemplateToClipboard();
+    });
+  });
+}
+
 storage.remove();
-setNotifierWrapper();
 start();
