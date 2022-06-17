@@ -187,6 +187,7 @@ const copyTemplateToClipboard = () => {
   });
 };
 
+// Start a click handler if the device is MacOS
 if (isMac) {
   notifier.on('click', function (notifierObject, options, event) {
     open(options.link).finally(() => {
@@ -195,5 +196,24 @@ if (isMac) {
   });
 }
 
-storage.remove();
+// clean the storage and exit if not the first call
+const cleanStorage = (start) => {
+  storage.remove();
+  if (start !== "still-start") process.exit();
+}
+
+cleanStorage("still-start");
 start();
+
+//do something when app is closing
+process.on('exit', cleanStorage);
+
+//catches ctrl+c event
+process.on('SIGINT', cleanStorage);
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', cleanStorage);
+process.on('SIGUSR2', cleanStorage);
+
+//catches uncaught exceptions
+process.on('uncaughtException', cleanStorage);
