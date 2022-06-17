@@ -41,4 +41,5 @@ This tool is built on top of [node-notifier](https://github.com/mikaelbr/node-no
 - node build.js to build for Windows/MacOS/Linus (build folder will be generated)
 
 If you find the tool is useful, please star it
+
 [My website](https://ahmedeveloper.com/) for contact purpose
