@@ -91,6 +91,7 @@ const start = async () => {
 
 // Fetching the data from Upwork for the target URL
 const fetchData = async (URL) => {
+  timeNow = Date.now() + CHECK_INTERVAL;
   let output = await get(URL);
   var parser = new xml2js.Parser({ explicitArray: false });
   parser.parseStringPromise(output.data).then((output) => {
@@ -100,14 +101,13 @@ const fetchData = async (URL) => {
 
 // Check the jobs and notify the user
 const checkJobs = (jobs, URL, index = 0) => {
-  timeNow = Date.now();
   setTimeout(() => {
-    if (Date.now() - timeNow >= CHECK_INTERVAL) {
-      makeNotification(jobs[index]);
+    if (Date.now() >= timeNow) {
       fetchData(URL);
       return;
     }
     else {
+      makeNotification(jobs[index]);
       checkJobs(jobs, URL, index + 1);
     }
   }, NOTIFICATIONS_INTERVAL * 1000);
