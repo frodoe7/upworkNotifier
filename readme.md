@@ -8,27 +8,26 @@ This tool help the freelancers to be updated about any new posted jobs
 - Cross-platform working on Windows, MacOS and Linux 
 - Configurable
 
-## Downloads (Last update in 17 June 2022)
-- [Windows](https://drive.google.com/file/d/1x6_1YUd6Fj29pA468zGw9We52XgN3zmh/view?usp=sharing)
-- [MacOS](https://drive.google.com/file/d/1bs3EwUCUMer6YkaJwhUhZMfU6CUVUmEy/view?usp=sharing)
-- [Linux](https://drive.google.com/file/d/1p5L51twMV_O80FuOHNUQgeR_3gmbalJs/view?usp=sharing)
+## Downloads (Last update in 25 June 2022)
+- [Windows](https://drive.google.com/file/d/17fkQa4MsrxfuY1tFMJlMYltT-yPMsDwH/view?usp=sharing)
+- [MacOS](https://drive.google.com/file/d/1KTLb_vKpx4aFiqDlVuoM-nHy9RXkmkMt/view?usp=sharing)
+- [Linux](https://drive.google.com/file/d/1vdQNYSw1E_UBfjOkoNpTI0uXzoHk1BB0/view?usp=sharing)
 
 ## Getting Start
 
 - Open Upwork on jobs page (with your filters/search preferences)
 - Don't forget to select your category from the filters - to not get unrelated jobs
 - Click on RSS icon beside "### jobs found" and then select RSS
-- Copy the XML Code and put it into config.txt file
+- Copy the URL and put it into settings.txt file for the URL attribute
 - Use the settings.txt file to set the period between the notifications (in seconds)
 - Run the executable file, Done
 
 ## Configurations
 
-There's 3 files in the project directory
+There's 2 files in the project directory
 
-- config.txt > put your RSS XML code here
+- settings.txt > where the configurations live, there's only 2 props URL and NOTIFICATIONS_INTERVAL as explained in the file
 - template.txt > the cover letter template to be copied, keep it blank if you don't need this feature
-- settings.txt > where the configurations live, there's only 2 props CHECK_INTERVAL and NOTIFICATIONS_INTERVAL as explained in the file
 
 ## Development
 
