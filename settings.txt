@@ -3,5 +3,5 @@
 # URL is the XML configs URL
 # NOTIFICATIONS_INTERVAL is the time in seconds between each notification and other
 
-URL=https://www.upwork.com/ab/feed/jobs/rss?sort=recency&category2_uid=531770282580668418&proposals=0-4&paging=0%3B10&api_params=1&q=&securityToken=f2b0387dff39cad34617919e8ea93fba2c2d9edeaa2c6e8542ba548b809716247e6a221b466a3f3846f86840eff9210661f8e4db44269b265bdb87e8493fc792&userUid=424263801437454336&orgUid=424263801441648641
+URL=https://www.upwork.com/ab/feed/jobs/rss?sort=recency&subcategory2_uid=531770282589057032%2C531770282589057028%2C531770282589057029%2C531770282584862733&paging=0%3B10&api_params=1&q=&securityToken=f2b0387dff39cad34617919e8ea93fba2c2d9edeaa2c6e8542ba548b809716247e6a221b466a3f3846f86840eff9210661f8e4db44269b265bdb87e8493fc792&userUid=424263801437454336&orgUid=424263801441648641
 NOTIFICATIONS_INTERVAL=25

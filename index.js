@@ -32,11 +32,7 @@ const start = async () => {
       if (lines[i].includes('=') && lines[i].includes('URL')) {
         let line = lines[i].replace(/\s+/g, '');
         let value = line.replace('URL=', '');
-        let output = await get(value);
-        const content = output.data?.toString();
-        let parser = new xml2js.Parser({ explicitArray: false });
-        let jsonData = await parser.parseStringPromise(content);
-        URL = jsonData?.rss?.channel?.link;
+        URL = value;
       }
 
       if (
