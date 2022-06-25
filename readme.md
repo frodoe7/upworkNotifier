@@ -9,9 +9,9 @@ This tool help the freelancers to be updated about any new posted jobs
 - Configurable
 
 ## Downloads (Last update in 25 June 2022)
-- [Windows](https://drive.google.com/file/d/17fkQa4MsrxfuY1tFMJlMYltT-yPMsDwH/view?usp=sharing)
-- [MacOS](https://drive.google.com/file/d/1KTLb_vKpx4aFiqDlVuoM-nHy9RXkmkMt/view?usp=sharing)
-- [Linux](https://drive.google.com/file/d/1vdQNYSw1E_UBfjOkoNpTI0uXzoHk1BB0/view?usp=sharing)
+- [Windows](https://drive.google.com/file/d/1mn03eZ3-ELW0_Q2jbWazdIiHpZ5222Gj/view?usp=sharing)
+- [MacOS](https://drive.google.com/file/d/14Fj_zA6KSSJmtEAijoNuTsyD-qb9SG5g/view?usp=sharing)
+- [Linux](https://drive.google.com/file/d/1WB-OyF4Gr6mlqmJkws-ici2Ni511SAho/view?usp=sharing)
 
 ## Getting Start
 
