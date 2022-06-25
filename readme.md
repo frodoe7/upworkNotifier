@@ -16,8 +16,10 @@ This tool help the freelancers to be updated about any new posted jobs
 ## Getting Start
 
 - Open Upwork on jobs page (with your filters/search preferences)
+- Don't forget to select your category from the filters - to not get unrelated jobs
 - Click on RSS icon beside "### jobs found" and then select RSS
 - Copy the XML Code and put it into config.txt file
+- Use the settings.txt file to set the period between the notifications (in seconds)
 - Run the executable file, Done
 
 ## Configurations
@@ -41,4 +43,5 @@ This tool is built on top of [node-notifier](https://github.com/mikaelbr/node-no
 - node build.js to build for Windows/MacOS/Linus (build folder will be generated)
 
 If you find the tool is useful, please star it
+
 [My website](https://ahmedeveloper.com/) for contact purpose
