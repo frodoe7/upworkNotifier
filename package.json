@@ -15,7 +15,6 @@
   "dependencies": {
     "axios": "^0.27.2",
     "clipboardy": "^2.3.0",
-    "json-records": "^1.0.5",
     "node-dbus-notifier": "^0.3.1",
     "node-notifier": "^10.0.1",
     "open": "^8.4.0",

@@ -87,10 +87,6 @@ const buildWindows = async () => {
   console.log('Building for Windows...');
   execSync('npx pkg -t node18-win-x64 ./temp/index.js -o ./build/win64/upworkNotifier.exe');
   await cp(
-    path.join(__dirname, 'config.txt'),
-    path.join(__dirname, 'build/win64/config.txt')
-  );
-  await cp(
     path.join(__dirname, 'settings.txt'),
     path.join(__dirname, 'build/win64/settings.txt')
   );
@@ -133,10 +129,6 @@ const buildMacOS = async () => {
   execSync('npx pkg -t node18-macos-x64 ./temp/index.js -o ./build/macos/upworkNotifier');
   await chmod(path.join(__dirname, 'build/macos/upworkNotifier'), '755');
   await cp(
-    path.join(__dirname, 'config.txt'),
-    path.join(__dirname, 'build/macos/config.txt')
-  );
-  await cp(
     path.join(__dirname, 'settings.txt'),
     path.join(__dirname, 'build/macos/settings.txt')
   );
@@ -166,10 +158,6 @@ const buildLinux = async () => {
   console.log('Building for Linux...');
   execSync('npx pkg -t node18-linux-x64 ./temp/index.js -o ./build/linux/upworkNotifier');
   await chmod(path.join(__dirname, 'build/linux/upworkNotifier'), '755');
-  await cp(
-    path.join(__dirname, 'config.txt'),
-    path.join(__dirname, 'build/linux/config.txt')
-  );
   await cp(
     path.join(__dirname, 'settings.txt'),
     path.join(__dirname, 'build/linux/settings.txt')
