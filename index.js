@@ -1,11 +1,11 @@
 const xml2js = require('xml2js');
 const clipboard = require('clipboardy');
+const { execSync } = require('child_process');
 const notifier = require('node-notifier');
 const { Notify } = require('node-dbus-notifier');
 const { readFile, readFileSync } = require('fs');
 const axios = require('axios');
 const open = require('open');
-const JRs = require('json-records');
 const path = require('path');
 
 const rootPath = process.pkg ? path.dirname(process.execPath) : __dirname;
@@ -14,61 +14,59 @@ const isMac = process.platform === 'darwin';
 const isWindows = process.platform === 'win32';
 
 const { get } = axios;
-const storage = new JRs(path.join(rootPath, 'data.json'));
 
-let CHECK_INTERVAL;
+const CHECK_INTERVAL = 300000;
 let NOTIFICATIONS_INTERVAL;
 
+let timeNow;
+
 // Start loading config files and settings
-const start = () => {
+const start = async () => {
   try {
-    readFile(path.join(rootPath, 'config.txt'), {}, (err, data) => {
-      const content = data?.toString();
-      var parser = new xml2js.Parser({ explicitArray: false });
-      parser.parseStringPromise(content).then((jsonData) => {
-        const URL = jsonData?.rss?.channel?.link;
+    let URL;
+    let settings = readFileSync(path.join(rootPath, 'settings.txt'));
+    settings = settings.toString();
 
-        let settings = readFileSync(path.join(rootPath, 'settings.txt'));
-        settings = settings.toString();
+    let lines = settings.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('=') && lines[i].includes('URL')) {
+        let line = lines[i].replace(/\s+/g, '');
+        let value = line.replace('URL=', '');
+        let output = await get(value);
+        const content = output.data?.toString();
+        let parser = new xml2js.Parser({ explicitArray: false });
+        let jsonData = await parser.parseStringPromise(content);
+        URL = jsonData?.rss?.channel?.link;
+      }
 
-        let lines = settings.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].includes('=') && lines[i].includes('CHECK_INTERVAL')) {
-            let line = lines[i].replace(/\s+/g, '');
-            let value = line.split('=')[1];
-            CHECK_INTERVAL = parseInt(value) * 1000;
-          }
-
-          if (
-            lines[i].includes('=') &&
-            lines[i].includes('NOTIFICATIONS_INTERVAL')
-          ) {
-            let line = lines[i].replace(/\s+/g, '');
-            let value = line.split('=')[1];
-            NOTIFICATIONS_INTERVAL = parseInt(value) * 1000;
-          }
-        }
-        if (isLinux) {
-          const notify = new Notify({
-            appName: 'Upwork Notifier',
-            appIcon: path.join(rootPath, 'logo.png'),
-            summary: 'Success',
-            body: 'Started the tracker in success',
-            timeout: 5000,
-          });
-          notify.show();
-        } else {
-          notifier.notify({
-            title: 'Success',
-            message: 'Started the tracker in success',
-            icon: path.join(rootPath, 'logo.png'),
-            contentImage: path.join(rootPath, 'logo.png'),
-            sound: true,
-          });
-        }
-        startInterval(URL);
+      if (
+        lines[i].includes('=') &&
+        lines[i].includes('NOTIFICATIONS_INTERVAL')
+      ) {
+        let line = lines[i].replace(/\s+/g, '');
+        let value = line.split('=')[1];
+        NOTIFICATIONS_INTERVAL = parseInt(value);
+      }
+    }
+    if (isLinux) {
+      const notify = new Notify({
+        appName: 'Upwork Notifier',
+        appIcon: path.join(rootPath, 'logo.png'),
+        summary: 'Success',
+        body: 'Started the tracker in success',
+        timeout: 5000,
       });
-    });
+      notify.show();
+    } else {
+      notifier.notify({
+        title: 'Success',
+        message: 'Started the tracker in success',
+        icon: path.join(rootPath, 'logo.png'),
+        contentImage: path.join(rootPath, 'logo.png'),
+        sound: true,
+      });
+    }
+    fetchData(URL);
   } catch (err) {
     if (isLinux) {
       const notify = new Notify({
@@ -91,48 +89,28 @@ const start = () => {
   }
 };
 
-// Starting the check interval for the target URL
-const startInterval = (URL) => {
-  setInterval(() => {
-    const allJobs = storage.get();
-    fetchData(URL);
-    checkCachedJobs(allJobs);
-  }, CHECK_INTERVAL);
-};
-
 // Fetching the data from Upwork for the target URL
 const fetchData = async (URL) => {
   let output = await get(URL);
   var parser = new xml2js.Parser({ explicitArray: false });
   parser.parseStringPromise(output.data).then((output) => {
-    saveIt(output.rss.channel.item);
+    checkJobs(output.rss.channel.item, URL);
   });
 };
 
-// Save the fetched jobs in JSON file
-const saveIt = (data) => {
-  data.map((job) => {
-    if (!job.title) return;
-    let j = Object.assign(job);
-    j.notified = false;
-    storage.add(j);
-  });
-};
-
-// Check the stored jobs and notify the user or delete the already notified jobs
-const checkCachedJobs = (jobs, index = 0) => {
+// Check the jobs and notify the user
+const checkJobs = (jobs, URL, index = 0) => {
+  timeNow = Date.now();
   setTimeout(() => {
-    if (jobs.length === index + 1 || jobs[index] === undefined) return;
-    if (jobs[index].notified) {
-      storage.remove((record) => record.title === jobs[index].title);
-    } else {
+    if (Date.now() - timeNow >= CHECK_INTERVAL) {
       makeNotification(jobs[index]);
-      storage.update((record) => record.title === jobs[index].title, {
-        notified: true,
-      });
+      fetchData(URL);
+      return;
     }
-    checkCachedJobs(jobs, index + 1);
-  }, NOTIFICATIONS_INTERVAL);
+    else {
+      checkJobs(jobs, URL, index + 1);
+    }
+  }, NOTIFICATIONS_INTERVAL * 1000);
 };
 
 // Take the job props and notify the user about it
@@ -152,20 +130,23 @@ const makeNotification = (job) => {
     });
     notify.show();
   } else if (isWindows) {
-    notifier.notify({
-      title: job.title,
-      message: job.description,
-      sound: true,
-      icon: path.join(rootPath, 'logo.png'),
-      contentImage: path.join(rootPath, 'logo.png'),
-      actions: ["Apply"],
-    }, (error, response, metadata) => {
-      if (response === "Apply" || response === "apply") {
-        open(job.link).finally(() => {
-          copyTemplateToClipboard();
-        });
+    notifier.notify(
+      {
+        title: job.title,
+        message: job.description,
+        sound: true,
+        icon: path.join(rootPath, 'logo.png'),
+        contentImage: path.join(rootPath, 'logo.png'),
+        actions: ['Apply'],
+      },
+      (error, response, metadata) => {
+        if (response === 'Apply' || response === 'apply') {
+          open(job.link).finally(() => {
+            copyTemplateToClipboard();
+          });
+        }
       }
-    });
+    );
   } else if (isMac) {
     notifier.notify({
       title: job.title,
@@ -196,24 +177,22 @@ if (isMac) {
   });
 }
 
-// clean the storage and exit if not the first call
-const cleanStorage = (start) => {
-  storage.remove();
-  if (start !== "still-start") process.exit();
-}
-
-cleanStorage("still-start");
-start();
+// exit the application
+const exit = () => {
+  process.exit();
+};
 
 //do something when app is closing
-process.on('exit', cleanStorage);
+process.on('exit', exit);
 
 //catches ctrl+c event
-process.on('SIGINT', cleanStorage);
+process.on('SIGINT', exit);
 
 // catches "kill pid" (for example: nodemon restart)
-process.on('SIGUSR1', cleanStorage);
-process.on('SIGUSR2', cleanStorage);
+process.on('SIGUSR1', exit);
+process.on('SIGUSR2', exit);
 
 //catches uncaught exceptions
-process.on('uncaughtException', cleanStorage);
+process.on('uncaughtException', exit);
+
+start();
