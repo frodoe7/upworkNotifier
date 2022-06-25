@@ -8,7 +8,7 @@ This tool help the freelancers to be updated about any new posted jobs
 - Cross-platform working on Windows, MacOS and Linux 
 - Configurable
 
-## Downloads (Last update in 17 June 2022)
+## Downloads (Last update in 25 June 2022)
 - [Windows](https://drive.google.com/file/d/17fkQa4MsrxfuY1tFMJlMYltT-yPMsDwH/view?usp=sharing)
 - [MacOS](https://drive.google.com/file/d/1KTLb_vKpx4aFiqDlVuoM-nHy9RXkmkMt/view?usp=sharing)
 - [Linux](https://drive.google.com/file/d/1vdQNYSw1E_UBfjOkoNpTI0uXzoHk1BB0/view?usp=sharing)
