@@ -1,11 +1,18 @@
-Hey,
+Hey ###,
 
-I see you're looking for building something special
+I see you're ###
 
-I have enough skills and experience to finish your project in a good time,
+I have more than 5 years of experience in software solutions development,
+graduated from computer science faculty and now working as a full-stack developer,
+my experience falls around the MERN Stack
+NodeJS and Facebook technologies (React & React Native) beside NoSQL databases like MongoDB
 
-Looks you'd like to build something cool related to the fintech area,
+Here's 3 of my best projects
+https://cryptocommand.app
+https://robosto.com
+https://haader.com
 
-Check my website to know more about my skills and experience
+My website is a good reference for my skills and experience
+https://ahmedeveloper.com
 
-Thanks and Regards,
+Regards,

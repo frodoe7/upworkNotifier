@@ -111,6 +111,7 @@ const checkJobs = (jobs, URL, index = 0) => {
 
 // Take the job props and notify the user about it
 const makeNotification = (job) => {
+  if (!job) return;
   if (isLinux) {
     const notify = new Notify({
       appName: 'Upwork Notifier',
@@ -174,7 +175,8 @@ if (isMac) {
 }
 
 // exit the application
-const exit = () => {
+const exit = (something) => {
+  console.log(something);
   process.exit();
 };
 
