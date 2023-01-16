@@ -1,13 +1,15 @@
+// Technical Person
+
 Hey ###,
 
-I see you're ###
+Looks you're ###
 
-I have more than 5 years of experience in software solutions development,
-graduated from computer science faculty and now working as a full-stack developer,
+With more than 6 years of experience in building mobile apps and backend systems,
+now working as a full-stack developer,
 my experience falls around the MERN Stack
 NodeJS and Facebook technologies (React & React Native) beside NoSQL databases like MongoDB
 
-Here's 3 of my best projects
+Here's 4 of my best projects
 https://cryptocommand.app
 https://robosto.com
 https://haader.com
